@@ -1,0 +1,17 @@
+- hosts: localhost
+  connection: local
+  collections:
+    - azure.azcollection
+  tasks:
+    - name: Create a virtual network
+      azure_rm_virtualnetwork:
+        resource_group: "resource_group_east_us_2"
+        name: VirtualNetwork_east_us_2
+        address_prefixes_cidr:
+          - 10.0.0.0/16
+        dns_servers:
+          - 10.0.0.1
+          - 10.1.0.1
+        tags:
+          testing: testing
+          delete: on-exit
