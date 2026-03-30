@@ -1,6 +1,6 @@
 # Oracle 19c RAC
 
-This guide walks through a complete Oracle RAC 19c lab setup from start to finish. All key steps are aligned with my upcoming YouTube videos, allowing you to follow along easily while building your own environment. Each section is structured to be simple, practical, and time-saving, so you can quickly understand and implement Oracle RAC in a lab setup.
+This guide walks through a complete Oracle RAC 19c lab setup from start to finish. All key steps are aligned, allowing you to follow along easily while building your own environment. Each section is structured to be simple, practical, and time-saving, so you can quickly understand and implement Oracle RAC in a lab setup.
 
 ## Table of Contents
 - [Oracle 19c RAC](#oracle-19c-rac)
