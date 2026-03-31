@@ -2627,6 +2627,92 @@ Time taken to complete the session 34 minutes, 37 seconds
 [root@oracle62 db_home]#
 ```
 
+#### Apply GI patch
+
+```bash
+source /home/grid/.grid_env
+cd $ORACLE_HOME
+$ORACLE_HOME/OPatch/opatchauto apply /tmp/38629535/ -oh $ORACLE_HOME
+```
+
+```log
+[root@oracle62 ~]# source /home/grid/.grid_env
+[root@oracle62 ~]# cd $ORACLE_HOME
+[root@oracle62 grid_home]# $ORACLE_HOME/OPatch/opatchauto apply /tmp/38629535/ -oh $ORACLE_HOME
+
+OPatchauto session is initiated at Tue Mar 31 17:01:36 2026
+
+System initialization log file is /u01/19c/grid/grid_home/cfgtoollogs/opatchautodb/systemconfig2026-03-31_05-01-55PM.log.
+
+Session log file is /u01/19c/grid/grid_home/cfgtoollogs/opatchauto/opatchauto2026-03-31_05-03-36PM.log
+The id for this session is 3KBD
+
+Executing OPatch prereq operations to verify patch applicability on home /u01/19c/grid/grid_home
+Patch applicability verified successfully on home /u01/19c/grid/grid_home
+
+
+Executing patch validation checks on home /u01/19c/grid/grid_home
+Patch validation checks successfully completed on home /u01/19c/grid/grid_home
+
+
+Performing prepatch operations on CRS - bringing down CRS service on home /u01/19c/grid/grid_home
+Prepatch operation log file location: /u01/19c/grid/grid_base/crsdata/oracle62/crsconfig/crs_prepatch_apply_inplace_oracle62_2026-03-31_05-07-57PM.log
+CRS service brought down successfully on home /u01/19c/grid/grid_home
+
+
+Start applying binary patch on home /u01/19c/grid/grid_home
+Binary patch applied successfully on home /u01/19c/grid/grid_home
+
+
+Running rootadd_rdbms.sh on home /u01/19c/grid/grid_home
+Successfully executed rootadd_rdbms.sh on home /u01/19c/grid/grid_home
+
+
+
+
+Performing postpatch operations on CRS - starting CRS service on home /u01/19c/grid/grid_home
+Postpatch operation log file location: /u01/19c/grid/grid_base/crsdata/oracle62/crsconfig/crs_postpatch_apply_inplace_oracle62_2026-03-31_05-26-35PM.log
+CRS service started successfully on home /u01/19c/grid/grid_home
+
+OPatchAuto successful.
+
+--------------------------------Summary--------------------------------
+
+Patching is completed successfully. Please find the summary as follows:
+
+Host:oracle62
+CRS Home:/u01/19c/grid/grid_home
+Version:19.0.0.0.0
+Summary:
+
+==Following patches were SKIPPED:
+
+Patch: /tmp/38629535/38653268
+Log: /u01/19c/grid/grid_home/cfgtoollogs/opatchauto/core/opatch/opatch2026-03-31_17-04-47PM_1.log
+Reason: /tmp/38629535/38653268 is not required to be applied to oracle home /u01/19c/grid/grid_home
+
+
+==Following patches were SUCCESSFULLY applied:
+
+Patch: /tmp/38629535/36758186
+Log: /u01/19c/grid/grid_home/cfgtoollogs/opatchauto/core/opatch/opatch2026-03-31_17-12-26PM_1.log
+
+Patch: /tmp/38629535/38632161
+Log: /u01/19c/grid/grid_home/cfgtoollogs/opatchauto/core/opatch/opatch2026-03-31_17-12-26PM_1.log
+
+Patch: /tmp/38629535/38661284
+Log: /u01/19c/grid/grid_home/cfgtoollogs/opatchauto/core/opatch/opatch2026-03-31_17-12-26PM_1.log
+
+Patch: /tmp/38629535/38729293
+Log: /u01/19c/grid/grid_home/cfgtoollogs/opatchauto/core/opatch/opatch2026-03-31_17-12-26PM_1.log
+
+
+
+OPatchauto session completed at Tue Mar 31 17:37:45 2026
+Time taken to complete the session 35 minutes, 51 seconds
+[root@oracle62 grid_home]#
+```
+
 ### Data Patch
 
 login as `oracle` user
