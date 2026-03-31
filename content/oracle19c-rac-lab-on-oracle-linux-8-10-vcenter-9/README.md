@@ -2633,12 +2633,18 @@ login as `oracle` user
 ```bash
 $ORACLE_HOME/OPatch/datapatch -verbose
 ```
+
+```sql
+ALTER SESSION SET CONTAINER=CDB$ROOT;
+ALTER PLUGGABLE DATABASE ALL OPEN;
+```
+
 ```log
 [oracle@oracle61 ~]$ $ORACLE_HOME/OPatch/datapatch -verbose
-SQL Patching tool version 19.30.0.0.0 Production on Tue Mar 31 00:59:22 2026
+SQL Patching tool version 19.30.0.0.0 Production on Tue Mar 31 10:25:39 2026
 Copyright (c) 2012, 2026, Oracle.  All rights reserved.
 
-Log file for this invocation: /u01/19c/oracle/ora_base/cfgtoollogs/sqlpatch/sqlpatch_170951_2026_03_31_00_59_22/sqlpatch_invocation.log
+Log file for this invocation: /u01/19c/oracle/ora_base/cfgtoollogs/sqlpatch/sqlpatch_684474_2026_03_31_10_25_39/sqlpatch_invocation.log
 
 Connecting to database...OK
 Gathering database info...done
@@ -2648,7 +2654,6 @@ Note:  Datapatch will only apply or rollback SQL fixes for PDBs
        Please refer to Note: Datapatch: Database 12c Post Patch SQL Automation
        (Doc ID 1585822.1)
 
-Warning: PDB PRODPDB1 is in mode MOUNTED and will be skipped.
 Bootstrapping registry and package to current versions...done
 Determining current state...done
 
@@ -2662,6 +2667,8 @@ Current state of release update SQL patches:
     Applied 19.30.0.0.0 Release_Update 260126024251 successfully on 31-MAR-26 12.27.55.166855 AM
   PDB PDB$SEED:
     Applied 19.30.0.0.0 Release_Update 260126024251 successfully on 31-MAR-26 12.55.39.580538 AM
+  PDB PRODPDB1:
+    Applied 19.3.0.0.0 Release_Update 190410122720 successfully on 27-MAR-26 11.23.05.521178 AM
 
 Adding patches to installation queue and performing prereq checks...done
 Installation queue:
@@ -2669,9 +2676,25 @@ Installation queue:
     No interim patches need to be rolled back
     No release update patches need to be installed
     No interim patches need to be applied
+  For the following PDBs: PRODPDB1
+    No interim patches need to be rolled back
+    Patch 38632161 (Database Release Update : 19.30.0.0.260120(REL-JAN260130) (38632161)):
+      Apply from 19.3.0.0.0 Release_Update 190410122720 to 19.30.0.0.0 Release_Update 260126024251
+    No interim patches need to be applied
 
-SQL Patching tool complete on Tue Mar 31 01:01:28 2026
+Installing patches...
+Patch installation complete.  Total patches installed: 1
+
+Validating logfiles...done
+Patch 38632161 apply (pdb PRODPDB1): SUCCESS
+  logfile: /u01/19c/oracle/ora_base/cfgtoollogs/sqlpatch/38632161/28482211/38632161_apply_PROD_PRODPDB1_2026Mar31_10_28_10.log (no errors)
+SQL Patching tool complete on Tue Mar 31 10:57:52 2026
 [oracle@oracle61 ~]$
+```
+
+```sql
+ALTER SESSION SET CONTAINER=PRODPDB1;
+@?/rdbms/admin/utlrp.sql
 ```
 
 ### Check Version 
@@ -2866,6 +2889,7 @@ login as `oracle` user
 su - oracle
 sqlplus / as sysdba
 ```
+
 ```log
 [root@oracle61 ~]# su - oracle
 [oracle@oracle61 ~]$ sqlplus / as sysdba
@@ -2939,6 +2963,33 @@ INST_NAME
 --------------------------------------------------------------------------------
     CON_ID
 ----------
+```
+
+Create User
+
+```sql
+ALTER SESSION SET CONTAINER=PRODPDB1;
+SHOW CON_NAME;
+
+CREATE USER test_user IDENTIFIED BY "Test@123";
+
+GRANT CONNECT, RESOURCE TO test_user;
+GRANT CREATE SESSION, CREATE TABLE TO test_user;
+```
+
+optional
+
+```sql
+SET LINESIZE 220
+SET PAGESIZE 100
+SET COLSEP ' | '
+
+COLUMN username FORMAT A25
+COLUMN account_status FORMAT A25
+
+SELECT username, account_status
+FROM dba_users
+ORDER BY username;
 ```
 
 ## References
