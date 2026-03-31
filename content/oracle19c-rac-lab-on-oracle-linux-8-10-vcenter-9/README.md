@@ -2975,6 +2975,17 @@ CREATE USER test_user IDENTIFIED BY "Test@123";
 
 GRANT CONNECT, RESOURCE TO test_user;
 GRANT CREATE SESSION, CREATE TABLE TO test_user;
+ALTER USER test_user QUOTA UNLIMITED ON USERS;
+```
+
+Create Table
+
+```sql
+CREATE TABLE employees (
+    emp_id   NUMBER PRIMARY KEY,
+    emp_name VARCHAR2(50),
+    salary   NUMBER
+);
 ```
 
 optional
