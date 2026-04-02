@@ -210,13 +210,16 @@ enable repos
 dnf config-manager --set-enabled ol8_appstream
 dnf config-manager --set-enabled ol8_codeready_builder
 dnf install oracle-epel-release-el8.x86_64 -y
+
 ```
 
 ```bash
-sudo dnf install kernel-uek-devel-$(uname -r) gcc binutils automake make perl bzip2 elfutils-libelf-devel htop -y
+sudo dnf install kernel-uek-devel-$(uname -r) gcc binutils automake make perl bzip2 elfutils-libelf-devel htop vim -y
+
 ```
 ```bash
 sudo dnf install -y bc binutils libcap libstdc++ libstdc++-devel dtrace elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc glibc-devel ksh libaio libaio-devel libXrender.x86_64 libXrender-devel.x86_64 libX11 libXau libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils python3 python3-configshell python3-rtslib python3-six targetcli smartmontools sysstat gcc unixODBC libnsl libnsl.i686 libnsl2-devel.i686 libnsl2-devel.x86_64 libnsl2.x86_64 libnsl2.i686
+
 ```
 
 
@@ -226,6 +229,7 @@ sudo dnf install -y bc binutils libcap libstdc++ libstdc++-devel dtrace elfutils
 Login as root list all the avilable disks on the OS:
 ```bash
 lsblk
+
 ```
 ```log
 [root@oracle61 ~]# lsblk
@@ -245,6 +249,7 @@ formate the disk using below command:
 
 ```bash
 fdisk /dev/sdb
+
 ```
 ```log
 [root@oracle61 ~]# fdisk /dev/sdb
@@ -306,6 +311,7 @@ Create PV
 ```bash
 pvcreate /dev/sdb1
 pvs
+
 ```
 ```log
 [root@oracle61 ~]# pvcreate /dev/sdb1
@@ -379,9 +385,12 @@ fsck from util-linux 2.32.1
 
 ```bash
 vim /etc/fstab
+
 ```
+
 `add`
-```
+
+```config
 /dev/db/u01   /u01    xfs defaults        0 0
 ```
 
@@ -389,17 +398,20 @@ Mount the u01
 
 ```bash
 umount /u01
+
 ```
+
 ```log
 [root@oracle61 ~]# umount /u01
 umount: /u01: no mount point specified.
 ```
+
 ```bash
 systemctl daemon-reload
 mkdir -p /u01
 mount /u01
-lsblk
 mount | grep /u01
+
 ```
 ```log
 [root@oracle61 ~]# mkdir -p /u01
@@ -409,18 +421,6 @@ mount: (hint) your fstab has been modified, but systemd still uses
 [root@oracle61 ~]# systemctl daemon-reload
 [root@oracle61 ~]# mount /u01
 mount: /u01: /dev/mapper/db-u01 already mounted on /u01.
-[root@oracle61 ~]# lsblk
-NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
-sda           8:0    0   128G  0 disk
-├─sda1        8:1    0   600M  0 part /boot/efi
-├─sda2        8:2    0     1G  0 part /boot
-└─sda3        8:3    0 126.4G  0 part
-  ├─ol-root 252:0    0    60G  0 lvm  /
-  ├─ol-swap 252:1    0  12.8G  0 lvm  [SWAP]
-  └─ol-home 252:2    0  53.6G  0 lvm  /home
-sdb           8:16   0    64G  0 disk
-└─sdb1        8:17   0    64G  0 part
-  └─db-u01  252:3    0    64G  0 lvm  /u01
 [root@oracle61 ~]# mount | grep /u01
 /dev/mapper/db-u01 on /u01 type xfs (rw,relatime,seclabel,attr2,inode64,logbufs=8,logbsize=32k,noquota)
 [root@oracle61 ~]#
@@ -430,8 +430,9 @@ Check the list of disks
 
 ```bash
 lsblk
+
 ```
-```bash
+```log
 [root@oracle61 ~]# lsblk
 NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
 sda           8:0    0   128G  0 disk
@@ -451,6 +452,7 @@ Reboot to check if everything is ok
 
 ```bash
 reboot
+
 ```
 
 
@@ -471,58 +473,61 @@ check cache to download the metadata from online repo:
 dnf makecache
 ```
 
-Install prerequisites and ASM required packages:
+Install prerequisites and ASM required packages:<br>
+Search package
+```bash
+dnf search preinstall-19c
+```
+
+Install prereqisites  
 
 ```bash
-# Search for preinstall package
-dnf search preinstall-19c
-
-# Install oracle prereqisites  
 dnf install oracle-database-preinstall-19c.x86_64 -y 
+
 ```
 
 this step is optional if you want to update the system:
 
 ```bash
-# Optional 
-dnf check-update # list the packages that need for update  
+dnf check-update
 dnf update -y
 dnf clean all
+
 ```
 
-Create OS groups for asm administration and operation:
-
+Create OS groups for asm administration and operation:<br>
+Create ASM groups 
 ```bash
-# Create ASM groups 
 groupadd -g 54327 asmdba
 groupadd -g 54328 asmoper
 groupadd -g 54329 asmadmin
+
 ```
 
 Add `asmdba` as secondary group to oracle user:
 
 ```bash
-# add asmdba group to oracle user asmadmin
 usermod -a -G  asmdba oracle
-id oracle 
+id oracle
+
 ```
 
 Create Grid user:
 
 ```bash
-# create grid user 
 useradd -u 54331 -g oinstall -G dba,asmdba,asmadmin,asmoper,racdba grid
-id grid 
+id grid
+
 ```
 
 Change the password for Oracle and Grid user:
 
 ```bash
-# create grid oracle user passwords 
 passwd oracle
 echo password | passwd oracle --stdin
 echo password | passwd grid --stdin
 passwd grid
+
 ```
 
 Create the Directories for the Oracle Grid installation 
@@ -542,6 +547,7 @@ Check the NTP service
 ```bash
 # chrony both servers
 vim /etc/chrony.conf
+
 ```
 
 `add`
@@ -557,8 +563,8 @@ command check service
 ```bash
 systemctl enable chronyd
 systemctl restart chronyd
-chronyc sources
 systemctl status chronyd
+chronyc sources
 
 ```
 
@@ -572,22 +578,29 @@ sed -i s/SELINUX=enforcing/SELINUX=disabled/g /etc/selinux/config
 cat /etc/selinux/config
 # Forse the change  
 setenforce Permissive
+
 ```
+
 create limitation in security forlder for grid user 
+
 ```bash
 cp /etc/security/limits.d/oracle-database-preinstall-19c.conf /etc/security/limits.d/grid-database-preinstall-19c.conf
+
 ```
 
 rename oracle with grid in this file grid-database-preinstall-19c.conf
 
 ```bash
-# use vim 
-vim /etc/security/limits.d/grid-database-preinstall-19c.conf
+vi /etc/security/limits.d/grid-database-preinstall-19c.conf
+
 ```
+
 `command`
+
 ```
 :%s/oracle/grid/g
 :x
+
 ```
 
 allow the port 1521 port in the Linux firewall [ref-link](https://forums.oracle.com/ords/apexds/post/firewall-clearance-for-oracle-listener-port-1521-0273)
@@ -597,17 +610,23 @@ allow the traffic for the port 1521
 firewall-cmd --permanent --add-port=1521/tcp
 firewall-cmd --reload
 firewall-cmd --list-ports
+
 ```
+
 example expected 
+
 ```log
 [root@oracle61 ~]# firewall-cmd --list-ports
 1521/tcp
 [root@oracle61 ~]
 ```
+
 or stop the firewall and disable it.
+
 ```bash
 systemctl stop firewalld
 systemctl disable firewalld
+
 ```
 
 ### Create Env Variables
@@ -617,13 +636,18 @@ Create a backup of the Grid user's .bash_profile.
 ```bash
 su - grid
 cp .bash_profile .bash_profile.bkp
+
 ```
+
 Configure the ORA_SID environment variable on each node as follows:<br>
 node1
+
 ```bash
 export ORA_SID=+ASM1
 ```
+
 node2
+
 ```bash
 export ORA_SID=+ASM2
 ```
@@ -658,17 +682,20 @@ export PATH
 export CV_ASSUME_DISTID=OEL7.8
 umask 022
 EOF
+
 ```
 
 Add the Grid environment file to the Grid user’s profile
 
 ```bash
 echo '. ~/.grid_env' >> /home/grid/.bash_profile
+
 ```
 
 Fix ownership (if created by root)
 ```bash
 chown grid:oinstall /home/grid/.grid_env
+
 ```
 
 Apply changes
@@ -677,6 +704,7 @@ Apply changes
 source .bash_profile 
 env | grep -i "tns\|oracle"
 exit
+
 ```
 
 example expected
@@ -694,12 +722,14 @@ TNS_ADMIN=/u01/19c/grid/grid_home/network/admin
 logout
 [root@oracle61 ~]#
 ```
+
 Switch to the `oracle` user.<br>
 Create a backup of the Oracle user's .bash_profile.
 
 ```bash
 su - oracle 
 cp .bash_profile .bash_profile.bkp
+
 ```
 
 Configure the ORA_SID environment variable on each node as follows:<br>
@@ -750,6 +780,7 @@ TMPDIR=\$tmp ; export TMPDIR
 
 export CV_ASSUME_DISTID=OEL7.8
 EOF
+
 ```
 
 Add the Grid environment file to the Grid user’s profile
@@ -759,6 +790,7 @@ cat  >> /home/oracle/.bash_profile <<EOF
 source /home/oracle/.db19_env
 alias db19_env='. /home/oracle/.db19_env'
 EOF
+
 ```
 
 Fix ownership (if created by root)
@@ -766,6 +798,7 @@ Fix ownership (if created by root)
 ```bash  
 chown oracle:oinstall /home/oracle/.bash_profile
 chown oracle:oinstall /home/oracle/.db19_env
+
 ```
 
 Apply changes from oracle user
@@ -774,6 +807,7 @@ Apply changes from oracle user
 source /home/oracle/.bash_profile
 env | grep ORACLE_
 exit
+
 ```
 example expected
 
@@ -881,11 +915,10 @@ Best practice: Use an external DNS server (not on RAC nodes)
 ### Install BIND9
 
 ```bash
-
-# DNS Server
 dnf makecache
 dnf install bind bind-utils -y
 hostnamectl
+
 ```
 
 ### Configure BIND
@@ -893,11 +926,13 @@ hostnamectl
 ```bash
 systemctl stop named
 systemctl disable named 
+
 ```
 
 backup the file 
 ```bash
 cp /etc/named.conf /etc/named.conf.bkp
+
 ```
 script for the named.conf based on your system
 
@@ -969,11 +1004,12 @@ zone "$DNS_BACKWARD" IN {
      allow-query { any; };
 };
 EOF
+
 ```
 
 ### Backward Zone
 
-```conf
+```bash
 cat  > /var/named/forward.p2ok.site <<EOF
 \$TTL 86400
 @ IN SOA oracle61.p2ok.site. admin.p2ok.site. (
@@ -1012,11 +1048,12 @@ oracle-cluster-scan  IN  A  172.16.2.67
 ;CNAME Record
 ;ftp  IN   CNAME ftp.oracle61.p2ok.site.
 EOF
+
 ```
 
 ### Backward Zone
 
-```conf
+```bash
 cat > /var/named/backward.p2ok.site <<EOF
 \$TTL 86400
 @ IN SOA oracle61.p2ok.site. admin.p2ok.site. (
@@ -1042,6 +1079,7 @@ oracle61     IN      A       172.16.2.61
 66      IN      PTR     oracle-cluster-scan.p2ok.site
 67      IN      PTR     oracle-cluster-scan.p2ok.site
 EOF
+
 ```
 
 change the owner 
@@ -1049,32 +1087,34 @@ change the owner
 ```bash
 chown named:named /var/named/forward.p2ok.site
 chown named:named /var/named/backward.p2ok.site
+
 ```
 
 
 ### Test DNS Configuration
 ```bash
-# check the configurations 
 named-checkconf
 named-checkzone p2ok.site /var/named/forward.p2ok.site
 named-checkzone 172.16.2.61 /var/named/forward.p2ok.site
 systemctl start named
 systemctl enable named
+
 ```
 
 ### Use DNS 
-edit resolv.conf
 ```bash
 cat > /etc/resolv.conf <<EOF
 search p2ok.site
 nameserver 172.16.2.61
 EOF
+
 ```
 
 edit the network profiles may different in your system
 
 ```bash
 vi /etc/sysconfig/network-scripts/ifcfg-ens33
+
 ```
 add this line to this file 
 
@@ -1092,6 +1132,7 @@ or stop don't use firewalld.service
 ```bash
 systemctl stop firewalld.service
 systemctl disable firewalld.service
+
 ```
 
 test from the client
@@ -1156,6 +1197,7 @@ example expected
 ```bash
 systemctl stop named.service
 systemctl disable named.service
+
 ``` 
 
 ## ASM Shared Disks 
@@ -1212,6 +1254,7 @@ Start First Node and using fdisk to format the three disks
 fdisk /dev/sdc
 fdisk /dev/sdd
 fdisk /dev/sde
+
 ```
 
 ```log
@@ -1354,6 +1397,7 @@ then startup the second node the shared disks should be formated there and use c
 ```bash
 partprobe
 lsblk
+
 ```
 ```log
 [root@oracle62 ~]# lsblk
@@ -1451,6 +1495,7 @@ OPatch succeeded.
 
 ```bash
 ssh-keygen -t rsa
+
 ```
 
 Copy SSH Key
@@ -1458,11 +1503,13 @@ Copy SSH Key
 From Node2 → Node1
 ```bash
 ssh-copy-id grid@oracle61.p2ok.site
+
 ```
 
 From Node1 → Node2
 ```bash
 ssh-copy-id grid@oracle62.p2ok.site
+
 ```
 
 check Passwordless SSH from both nodes
@@ -1470,6 +1517,7 @@ check Passwordless SSH from both nodes
 ```bash
 ssh grid@oracle62 date
 ssh grid@oracle61 date
+
 ```
 
 login as `root` user in both nodes <br>
@@ -1477,6 +1525,7 @@ verify NTP time
 ```bash
 systemctl restart chronyd.service
 chronyc sources
+
 ```
 ```log
 [root@oracle62 ~]# systemctl restart chronyd.service
@@ -1497,6 +1546,7 @@ fix the error INS-06006
 ```bash
 cp -p /usr/bin/scp /usr/bin/scp.bkp
 echo "/usr/bin/scp.bkp -T \$*" > /usr/bin/scp
+
 ```
 
 fix the error PRVG-11550 and PRVG-10467 : The default Oracle Inventory group could not be determined.
@@ -1507,6 +1557,7 @@ rpm -ivh $ORACLE_HOME/cv/rpm/cvuqdisk*.rpm
 scp $ORACLE_HOME/cv/rpm/cvuqdisk*.rpm root@oracle62://tmp
 ssh oracle62
 rpm -ivh /tmp/cvuqdisk*.rpm
+
 ```
 
 ```log
@@ -1568,6 +1619,7 @@ export ORACLE_BASE=/tmp
 asmcmd afd_label CRS1 /dev/sdc1 --init
 asmcmd afd_lslbl /dev/sdc1
 unset ORACLE_BASE
+
 ```
 
 ```log
@@ -1586,6 +1638,7 @@ CRS1                                  /dev/sdc1
 Remove Label (if wrong disk)
 ```bash
 asmcmd afd_unlabel /dev/sdc1 --init
+
 ```
 
 chown owner group disk do both nodes
@@ -1599,6 +1652,7 @@ udevadm trigger
 ls -l /dev/sdc1
 ls -l /dev/sdd1
 ls -l /dev/sde1
+
 ```
 expected output
 ```log
