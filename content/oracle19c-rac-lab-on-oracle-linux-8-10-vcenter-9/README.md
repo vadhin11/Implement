@@ -218,7 +218,7 @@ sudo dnf install kernel-uek-devel-$(uname -r) gcc binutils automake make perl bz
 
 ```
 ```bash
-sudo dnf install -y bc binutils libcap libstdc++ libstdc++-devel dtrace elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc glibc-devel ksh libaio libaio-devel libXrender.x86_64 libXrender-devel.x86_64 libX11 libXau libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils python3 python3-configshell python3-rtslib python3-six targetcli smartmontools sysstat gcc unixODBC libnsl libnsl.i686 libnsl2-devel.i686 libnsl2-devel.x86_64 libnsl2.x86_64 libnsl2.i686
+sudo dnf install -y bc binutils libcap libstdc++ libstdc++-devel dtrace elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc glibc-devel ksh libaio libaio-devel libXrender.x86_64 libXrender-devel.x86_64 libX11 libXau libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils python3 python3-configshell python3-rtslib python3-six targetcli smartmontools sysstat gcc unixODBC libnsl libnsl.i686 libnsl2-devel.i686 libnsl2-devel.x86_64 libnsl2.x86_64 libnsl2.i686 xorg-x11-xauth xorg-x11-utils xorg-x11-apps libX11 libXext libXi libXtst libXrender libXrandr libxcb libXau libXdmcp fontconfig dejavu-sans-fonts dejavu-serif-fonts liberation-fonts
 
 ```
 
@@ -391,7 +391,7 @@ vim /etc/fstab
 `add`
 
 ```config
-/dev/db/u01   /u01    xfs defaults        0 0
+/dev/db/u01     /u01    xfs       defaults        0 0
 ```
 
 Mount the u01
@@ -1007,7 +1007,7 @@ EOF
 
 ```
 
-### Backward Zone
+### Forward Zone
 
 ```bash
 cat  > /var/named/forward.p2ok.site <<EOF
