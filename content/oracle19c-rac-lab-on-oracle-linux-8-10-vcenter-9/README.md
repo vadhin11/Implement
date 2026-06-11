@@ -3,105 +3,109 @@
 This guide walks through a complete Oracle RAC 19c lab setup from start to finish. All key steps are aligned, allowing you to follow along easily while building your own environment. Each section is structured to be simple, practical, and time-saving, so you can quickly understand and implement Oracle RAC in a lab setup.
 
 ## Table of Contents
+
 - [Oracle 19c RAC](#oracle-19c-rac)
-  * [Requirements](#requirements)
-  * [Setup VM Network](#setup-vm-network)
-    + [NAT](#nat)
-    + [Hostonly](#hostonly)
-  * [OS Installation](#os-installation)
-    + [Network and Host](#network-and-host)
-    + [Software Selection](#software-selection)
-    + [Root Password](#root-password)
-    + [User Creation](#user-creation)
-    + [Begin Installation](#begin-installation)
-    + [Post Installation](#post-installation)
-  * [Format Oracle Binaries Disk](#format-oracle-binaries-disk)
-    + [Create LVM](#create-lvm)
-    + [Make Files system](#make-files-system)
-    + [Add to fstab](#add-to-fstab)
-  * [Setup Prerequisites](#setup-prerequisites)
-    + [Prerequisites installation](#prerequisites-installation)
-    + [Create Env Variables](#create-env-variables)
-    + [Disable Unnecessary Services](#disable-Unnecessary-services)
-  * [Setup Cluster Network](#setup-cluster-network)
-    + [Cluster Network](#cluster-network)
-    + [Host file](#host-file)
-  * [Setup DNS](#setup-dns)
-    + [Install BIND9](#install-bind9)
-    + [Configure BIND](#configure-bind)
-    + [Forward Backward Zones](#forward-backward-zones)
-    + [Test DNS Configuration](#test-dns-configuration)
-    + [Use DNS](#use-dns)
-  * [Clone VM](#clone-vm)
-    + [Clone node1 to node2 ](#clone-node1-to-node2)
-    + [Edit Network](#edit-network)
-  * [ASM Shared Disks](#asm-shared-disks)
-    + [Create VSAN Disk](#create-vsan-disk)
-    + [Add Disk on Both Nodes](#add-disk-on-both-nodes)
-  * [Format Disks](#format-disks)
-  * [Setup GI + ASM AFD](#setup-gi---asm-afd)
-    + [Upload files](#upload-files)
-    + [Unzip files](#unzip-files)
-    + [Prerequisites](#prerequisites)
-    + [Installation](#installation)
-    + [Check Cluster Status](#check-cluster-status)
-  * [Database Installation](#database-installation)
-    + [Install DB Software Only](#install-db-software-only)
-    + [Create Data,FRA](#create-data-fra)
-    + [Create DB](#create-db)
-  * [Patch DB](#patch-db)
-    + [Node 1](#node-1)
+  - [Requirements](#requirements)
+  - [Setup VM Network](#setup-vm-network)
+    - [NAT](#nat)
+    - [Hostonly](#hostonly)
+  - [OS Installation](#os-installation)
+    - [Network and Host](#network-and-host)
+    - [Software Selection](#software-selection)
+    - [Root Password](#root-password)
+    - [User Creation](#user-creation)
+    - [Begin Installation](#begin-installation)
+    - [Post Installation](#post-installation)
+  - [Format Oracle Binaries Disk](#format-oracle-binaries-disk)
+    - [Create LVM](#create-lvm)
+    - [Make Files system](#make-files-system)
+    - [Add to fstab](#add-to-fstab)
+  - [Setup Prerequisites](#setup-prerequisites)
+    - [Prerequisites installation](#prerequisites-installation)
+    - [Create Env Variables](#create-env-variables)
+    - [Disable Unnecessary Services](#disable-unnecessary-services)
+  - [Setup Cluster Network](#setup-cluster-network)
+    - [Cluster Network](#cluster-network)
+    - [Host file](#host-file)
+  - [Setup DNS](#setup-dns)
+    - [Install BIND9](#install-bind9)
+    - [Configure BIND](#configure-bind)
+    - [Forward Backward Zones](#forward-backward-zones)
+    - [Test DNS Configuration](#test-dns-configuration)
+    - [Use DNS](#use-dns)
+  - [Clone VM](#clone-vm)
+    - [Clone node1 to node2](#clone-node1-to-node2)
+    - [Edit Network](#edit-network)
+  - [ASM Shared Disks](#asm-shared-disks)
+    - [Create VSAN Disk](#create-vsan-disk)
+    - [Add Disk on Both Nodes](#add-disk-on-both-nodes)
+  - [Format Disks](#format-disks)
+  - [Setup GI + ASM AFD](#setup-gi---asm-afd)
+    - [Upload files](#upload-files)
+    - [Unzip files](#unzip-files)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Check Cluster Status](#check-cluster-status)
+  - [Database Installation](#database-installation)
+    - [Install DB Software Only](#install-db-software-only)
+    - [Create Data,FRA](#create-data-fra)
+    - [Create DB](#create-db)
+  - [Patch DB](#patch-db)
+    - [Node 1](#node-1)
       - [Check](#check)
       - [Analyze](#analyze)
       - [Apply](#apply)
-    + [Node 2](#node-2)
+    - [Node 2](#node-2)
       - [Check](#check-1)
       - [Analyze](#analyze-1)
       - [Apply](#apply-1)
-    + [Data Patch](#data-patch)
-    + [Check Version](#check-version)
-  * [Manage Cluster Services](#manage-cluster-services)
-  * [SQL commands](#sql-commands)
-  * [References](#references)
+    - [Data Patch](#data-patch)
+    - [Check Version](#check-version)
+  - [Manage Cluster Services](#manage-cluster-services)
+  - [SQL commands](#sql-commands)
+  - [References](#references)
 
+## Requirements
 
-## Requirements 
-1.  Oracle Linux 8.10
-2.  Oracle 19.3 Grid Infrastructure (GI)
-4.  Oracle 19.3 Oracle Database (DB)
-5.  Vcenter version 9
-6.  Vcenter Network
-	1. Host only subnet 10.10.10.0/24 (Private Subnet)
-	2. NAT subnet 172.16.2.0/24 (Public Subnet)
-8.  Virtual Machine Resource Allocation:
-    1.  Node1
-        1.  32 GB VM RAM
-        2.  8 Cores
-        3.  128 GB OS VM DISK
-        4.  64 GB GRID & DB Binaries VM DISK
-        5.  2 VNIC Private/Public
-    2.  Node2
-        1.  32 GB VM RAM
-        2.  8 Cores
-        3.  128 GB OS VM DISK
-        4.  64 GB GRID & DB Binaries VM DISK
-        5.  2 VNIC Private/Public
+1. Oracle Linux 8.10
+2. Oracle 19.3 Grid Infrastructure (GI)
+3. Oracle 19.3 Oracle Database (DB)
+4. Vcenter version 9
+5. Vcenter Network
+6. Host only subnet 10.10.10.0/24 (Private Subnet)
+7. NAT subnet 172.16.2.0/24 (Public Subnet)
+8. Virtual Machine Resource Allocation:
+    1. Node1
+        1. 32 GB VM RAM
+        2. 8 Cores
+        3. 128 GB OS VM DISK
+        4. 64 GB GRID & DB Binaries VM DISK
+        5. 2 VNIC Private/Public
+    2. Node2
+        1. 32 GB VM RAM
+        2. 8 Cores
+        3. 128 GB OS VM DISK
+        4. 64 GB GRID & DB Binaries VM DISK
+        5. 2 VNIC Private/Public
 9. Shared Disk (VSAN)
-	1. 64 GB ASM shared VM disks.
-  2. 64 GB FRA shared VM disks.
-  3. 64 GB DATA shared VM disks.
-10. 2 NIC (Network Interface Card) , 4 NIC (Redundant) 
-11. 2 Network Switches, 4 Switches (redundant) 
-12. DNS server (self DNS for lab)
+10. 64 GB ASM shared VM disks.
+11. 64 GB FRA shared VM disks.
+12. 64 GB DATA shared VM disks.
+13. 2 NIC (Network Interface Card) , 4 NIC (Redundant)
+14. 2 Network Switches, 4 Switches (redundant)
+15. DNS server (self DNS for lab)
 
 ## Setup VM Network
-### NAT 
+
+### NAT
+
 Change NAT subnet to `172.16.2.0/24` DHCP as well
 
 ### Hostonly
-Change HostOnly to `10.10.10.0/24` 
 
-## OS Installation 
+Change HostOnly to `10.10.10.0/24`
+
+## OS Installation
 
 After download the Oracle 8.10, you can create a vm in Vsphere and select the iso as virutal CD/DVD then start the VM that you create and boot up the ISO media and follow the below steps:
 
@@ -133,11 +137,11 @@ select custom and press `Done`
 
 ![](picture/Installation_Destination_1.png)
 
-custom 
+custom
 
 ![](picture/Installation_Destination_2.png)
 
-`Accept` 
+`Accept`
 
 ![](picture/Installation_Destination_3.png)
 
@@ -159,27 +163,23 @@ custom
 
 ![](picture/Software_Selection.png)
 
-
 - Performance Tools
-- Legacy Linux Compatibility 
+- Legacy Linux Compatibility
 - Development Tools
-- Graphic Administration Tools 
+- Graphic Administration Tools
 - System Tools
 
-### Root Password 
+### Root Password
 
 ![](picture/Root_Password_crop.png)
 
 ![](picture/Root_Password.png)
 
-
 ### User Creation
 
 ![](picture/User_Creation_crop.png)
 
-
 ![](picture/User_Creation.png)
-
 
 ### Begin Installation
 
@@ -195,14 +195,13 @@ custom
 
 ![](picture/License3.png)
 
-
 ### Post Installation
 
-* Remove screen lock and sleep.
-* Increase terminal font size.
-* Auto connect network interfaces.
-* Add static network IP.
-* Install guest addition tools 
+- Remove screen lock and sleep.
+- Increase terminal font size.
+- Auto connect network interfaces.
+- Add static network IP.
+- Install guest addition tools
 
 enable repos
 
@@ -217,20 +216,23 @@ dnf install oracle-epel-release-el8.x86_64 -y
 sudo dnf install kernel-uek-devel-$(uname -r) gcc binutils automake make perl bzip2 elfutils-libelf-devel htop vim -y
 
 ```
+
 ```bash
 sudo dnf install -y bc binutils libcap libstdc++ libstdc++-devel dtrace elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc glibc-devel ksh libaio libaio-devel libXrender.x86_64 libXrender-devel.x86_64 libX11 libXau libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils python3 python3-configshell python3-rtslib python3-six targetcli smartmontools sysstat gcc unixODBC libnsl libnsl.i686 libnsl2-devel.i686 libnsl2-devel.x86_64 libnsl2.x86_64 libnsl2.i686 xorg-x11-xauth xorg-x11-utils xorg-x11-apps libX11 libXext libXi libXtst libXrender libXrandr libxcb libXau libXdmcp fontconfig dejavu-sans-fonts dejavu-serif-fonts liberation-fonts
 
 ```
 
-
 ## Format Oracle Binaries Disk
+
 ### Create LVM
 
 Login as root list all the avilable disks on the OS:
+
 ```bash
 lsblk
 
 ```
+
 ```log
 [root@oracle61 ~]# lsblk
 NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
@@ -251,6 +253,7 @@ formate the disk using below command:
 fdisk /dev/sdb
 
 ```
+
 ```log
 [root@oracle61 ~]# fdisk /dev/sdb
 
@@ -307,12 +310,14 @@ Syncing disks.
 [root@oracle61 ~]#
 ```
 
-Create PV 
+Create PV
+
 ```bash
 pvcreate /dev/sdb1
 pvs
 
 ```
+
 ```log
 [root@oracle61 ~]# pvcreate /dev/sdb1
   Physical volume "/dev/sdb1" successfully created.
@@ -329,6 +334,7 @@ Create VG
 vgcreate db /dev/sdb1
 vgs
 ```
+
 ```log
 [root@oracle61 ~]# vgcreate db /dev/sdb1
   Volume group "db" successfully created
@@ -339,12 +345,13 @@ vgs
 [root@oracle61 ~]#
 ```
 
-Create LV 
+Create LV
 
 ```bash
 lvcreate db -n u01 -l 100%FREE
 lvs
 ```
+
 ```log
 [root@oracle61 ~]# lvcreate db -n u01 -l 100%FREE
   Logical volume "u01" created.
@@ -363,6 +370,7 @@ lvs
 mkfs -t xfs /dev/mapper/db-u01
 fsck -N /dev/db/u01
 ```
+
 ```log
 [root@oracle61 ~]# mkfs -t xfs /dev/mapper/db-u01
 meta-data=/dev/mapper/db-u01     isize=512    agcount=4, agsize=4194048 blks
@@ -413,6 +421,7 @@ mount /u01
 mount | grep /u01
 
 ```
+
 ```log
 [root@oracle61 ~]# mkdir -p /u01
 [root@oracle61 ~]# mount /u01
@@ -426,12 +435,13 @@ mount: /u01: /dev/mapper/db-u01 already mounted on /u01.
 [root@oracle61 ~]#
 ```
 
-Check the list of disks 
+Check the list of disks
 
 ```bash
 lsblk
 
 ```
+
 ```log
 [root@oracle61 ~]# lsblk
 NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
@@ -455,10 +465,10 @@ reboot
 
 ```
 
-
 ## Setup Prerequisites
 
 ### Prerequisites installation
+
 check the Internet connectivity using ping :
 
 ```bash
@@ -475,6 +485,7 @@ dnf makecache
 
 Install prerequisites and ASM required packages:<br>
 Search package
+
 ```bash
 dnf search preinstall-19c
 ```
@@ -496,7 +507,8 @@ dnf clean all
 ```
 
 Create OS groups for asm administration and operation:<br>
-Create ASM groups 
+Create ASM groups
+
 ```bash
 groupadd -g 54327 asmdba
 groupadd -g 54328 asmoper
@@ -530,7 +542,7 @@ passwd grid
 
 ```
 
-Create the Directories for the Oracle Grid installation 
+Create the Directories for the Oracle Grid installation
 
 ```bash
 mkdir -p /u01/19c/oracle/ora_base/db_home
@@ -542,7 +554,7 @@ chmod -R 775 /u01
 
 ```
 
-Check the NTP service 
+Check the NTP service
 
 ```bash
 # chrony both servers
@@ -558,6 +570,7 @@ server 1.jp.pool.ntp.org iburst
 server 2.jp.pool.ntp.org iburst
 server 3.jp.pool.ntp.org iburst
 ```
+
 command check service
 
 ```bash
@@ -568,7 +581,7 @@ chronyc sources
 
 ```
 
-set secure linux to permissive 
+set secure linux to permissive
 
 ```bash
 # change SELINUX=enforcing to SELINUX=permissive
@@ -581,7 +594,7 @@ setenforce Permissive
 
 ```
 
-create limitation in security forlder for grid user 
+create limitation in security forlder for grid user
 
 ```bash
 cp /etc/security/limits.d/oracle-database-preinstall-19c.conf /etc/security/limits.d/grid-database-preinstall-19c.conf
@@ -606,6 +619,7 @@ vi /etc/security/limits.d/grid-database-preinstall-19c.conf
 allow the port 1521 port in the Linux firewall [ref-link](https://forums.oracle.com/ords/apexds/post/firewall-clearance-for-oracle-listener-port-1521-0273)
 
 allow the traffic for the port 1521
+
 ```bash
 firewall-cmd --permanent --add-port=1521/tcp
 firewall-cmd --reload
@@ -613,7 +627,7 @@ firewall-cmd --list-ports
 
 ```
 
-example expected 
+example expected
 
 ```log
 [root@oracle61 ~]# firewall-cmd --list-ports
@@ -630,6 +644,7 @@ systemctl disable firewalld
 ```
 
 ### Create Env Variables
+
 Switch to the `grid` user.<br>
 Create a backup of the Grid user's .bash_profile.
 
@@ -693,6 +708,7 @@ echo '. ~/.grid_env' >> /home/grid/.bash_profile
 ```
 
 Fix ownership (if created by root)
+
 ```bash
 chown grid:oinstall /home/grid/.grid_env
 
@@ -734,10 +750,13 @@ cp .bash_profile .bash_profile.bkp
 
 Configure the ORA_SID environment variable on each node as follows:<br>
 node1
+
 ```bash
 export ORA_SID=PROD11
 ```
+
 node2
+
 ```bash
 export ORA_SID=PROD12
 ```
@@ -809,6 +828,7 @@ env | grep ORACLE_
 exit
 
 ```
+
 example expected
 
 ```log
@@ -825,6 +845,7 @@ logout
 ```
 
 ### Disable Unnecessary Services
+
 Stop Services (**Root** Privilege Required)
 
 ```bash
@@ -881,22 +902,23 @@ systemctl disable brltty.service
 
 To configure a 2-node Oracle RAC cluster, allocate:
 
-* 7 Public IPs
-* 2 Private IPs (for interconnect)
+- 7 Public IPs
+- 2 Private IPs (for interconnect)
 
-### Cluster Network 
+### Cluster Network
 
 The Current Lab network setup will be simple as shown below
 
 ![](attachments/Pasted%20image%2020220602231907.png)
 
-
  For maximum HA and the Best Practice to have redundant network setup, you need  4 NIC 4 Switches
   
 ![](attachments/Pasted%20image%2020220602231751.png)
 
-### Host file 
+### Host file
+
 add below to host file `/etc/hosts`
+
 ```conf
 172.16.2.61   oracle61.p2ok.site       oracle61 #DNS
 172.16.2.62   oracle62.p2ok.site       oracle62 #DNS
@@ -910,6 +932,7 @@ add below to host file `/etc/hosts`
 ```
 
 ## Setup DNS
+
 Best practice: Use an external DNS server (not on RAC nodes)
 
 ### Install BIND9
@@ -929,11 +952,13 @@ systemctl disable named
 
 ```
 
-backup the file 
+backup the file
+
 ```bash
 cp /etc/named.conf /etc/named.conf.bkp
 
 ```
+
 script for the named.conf based on your system
 
 ```bash
@@ -949,28 +974,28 @@ export DNS_FQDN=$DNS_HOSTNAME.$DNS_DOMAIN
 
 cat > /etc/named.conf <<EOF
 options {
-	listen-on port 53 { 127.0.0.1; $DNS_IP; };
-	listen-on-v6 port 53 { ::1; };
-	directory 	"/var/named";
-	dump-file 	"/var/named/data/cache_dump.db";
-	statistics-file "/var/named/data/named_stats.txt";
-	memstatistics-file "/var/named/data/named_mem_stats.txt";
-	secroots-file	"/var/named/data/named.secroots";
-	recursing-file	"/var/named/data/named.recursing";
-	allow-query     { localhost; $DNS_NETWORK; };
+ listen-on port 53 { 127.0.0.1; $DNS_IP; };
+ listen-on-v6 port 53 { ::1; };
+ directory  "/var/named";
+ dump-file  "/var/named/data/cache_dump.db";
+ statistics-file "/var/named/data/named_stats.txt";
+ memstatistics-file "/var/named/data/named_mem_stats.txt";
+ secroots-file "/var/named/data/named.secroots";
+ recursing-file "/var/named/data/named.recursing";
+ allow-query     { localhost; $DNS_NETWORK; };
 
-	recursion yes;
+ recursion yes;
 
-	#dnssec-enable yes;
-	dnssec-validation yes;
+ #dnssec-enable yes;
+ dnssec-validation yes;
 
-	managed-keys-directory "/var/named/dynamic";
+ managed-keys-directory "/var/named/dynamic";
 
-	pid-file "/run/named/named.pid";
-	session-keyfile "/run/named/session.key";
+ pid-file "/run/named/named.pid";
+ session-keyfile "/run/named/session.key";
 
-	/* https://fedoraproject.org/wiki/Changes/CryptoPolicy */
-	include "/etc/crypto-policies/back-ends/bind.config";
+ /* https://fedoraproject.org/wiki/Changes/CryptoPolicy */
+ include "/etc/crypto-policies/back-ends/bind.config";
 };
 
 logging {
@@ -981,8 +1006,8 @@ logging {
 };
 
 zone "." IN {
-	type hint;
-	file "named.ca";
+ type hint;
+ file "named.ca";
 };
 
 include "/etc/named.rfc1912.zones";
@@ -1082,7 +1107,7 @@ EOF
 
 ```
 
-change the owner 
+change the owner
 
 ```bash
 chown named:named /var/named/forward.p2ok.site
@@ -1090,8 +1115,8 @@ chown named:named /var/named/backward.p2ok.site
 
 ```
 
-
 ### Test DNS Configuration
+
 ```bash
 named-checkconf
 named-checkzone p2ok.site /var/named/forward.p2ok.site
@@ -1101,7 +1126,8 @@ systemctl enable named
 
 ```
 
-### Use DNS 
+### Use DNS
+
 ```bash
 cat > /etc/resolv.conf <<EOF
 search p2ok.site
@@ -1116,19 +1142,22 @@ edit the network profiles may different in your system
 vi /etc/sysconfig/network-scripts/ifcfg-ens33
 
 ```
-add this line to this file 
+
+add this line to this file
 
 ```conf
 DNS1=172.16.2.61
 ```
 
-allow the dns traffic 
+allow the dns traffic
 
 ```bash
 firewall-cmd --add-service=dns --zone=public  --permanent
 firewall-cmd --reload
 ```
+
 or stop don't use firewalld.service
+
 ```bash
 systemctl stop firewalld.service
 systemctl disable firewalld.service
@@ -1136,6 +1165,7 @@ systemctl disable firewalld.service
 ```
 
 test from the client
+
 ```bash
 nslookup oracle61.p2ok.site
 nslookup oracle62.p2ok.site
@@ -1145,13 +1175,11 @@ ping oracle62
 
 ```
 
-
 ## Clone VM
 
-### Clone node1 to node2 
+### Clone node1 to node2
 
 Select first node VM from vSphere Client and right click VM select `Clone` then click to `Clone to Virtual Machine`:
-
 
 ![](picture/Clone_to_Virtual_Machine.png)
 
@@ -1161,8 +1189,8 @@ click finish
 
 then press power on VM
 
-
 ### Edit Network
+
 Start the second node and update the following:
 
 #### Update Hostname
@@ -1171,6 +1199,7 @@ Start the second node and update the following:
 hostnamectl set-hostname oracle62.p2ok.site
 hostnamectl
 ```
+
 example expected
 
 ```log
@@ -1188,22 +1217,28 @@ example expected
       Architecture: x86-64
 [root@oracle62-p2ok-site ~]#
 ```
-#### Update Network Configuration
-* Change Public IP
-* Change Private (Interconnect) IP
 
-#### Disable Local DNS called 
+#### Update Network Configuration
+
+- Change Public IP
+- Change Private (Interconnect) IP
+
+#### Disable Local DNS called
+
 `named.service`
+
 ```bash
 systemctl stop named.service
 systemctl disable named.service
 
-``` 
+```
 
-## ASM Shared Disks 
+## ASM Shared Disks
+
 ### Create VSAN Disk
 
 Create Virtual Disks
+
 1. Go to vCenter → VM → Edit Settings
 2. Click Add New Device → Hard Disk
 3. Select:
@@ -1211,25 +1246,26 @@ Create Virtual Disks
     - Disk size as required
     - Disk Provisioning: Thick (Eager Zeroed) (recommended for RAC)
     - 3 disks
-      * 64G for CRS
-      * 64G for FRA
-      * 64G for DATA
+      - 64G for CRS
+      - 64G for FRA
+      - 64G for DATA
 4. Set **Sharing** → `Multi-writer`
 
 ![](picture/VSAN_Disk.png)
 
 ### Add Disk on Both Nodes
 
-1. Edit both Node 
+1. Edit both Node
 2. Add existing disk:
     - Add Existing Hard Disk
     - Select the same VMDK used in both Node
 
 ![](picture/Attach_disk.png)
 
-## Format Disks 
+## Format Disks
 
 you should see new three disk on both node
+
 ```log
 [root@oracle61 ~]# lsblk
 NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
@@ -1249,7 +1285,8 @@ sde           8:64   0    64G  0 disk
 [root@oracle61 ~]#
 ```
 
-Start First Node and using fdisk to format the three disks 
+Start First Node and using fdisk to format the three disks
+
 ```bash
 fdisk /dev/sdc
 fdisk /dev/sdd
@@ -1394,11 +1431,13 @@ sde           8:64   0    64G  0 disk
 ```
 
 then startup the second node the shared disks should be formated there and use command
+
 ```bash
 partprobe
 lsblk
 
 ```
+
 ```log
 [root@oracle62 ~]# lsblk
 NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
@@ -1417,6 +1456,7 @@ sdd           8:48   0    64G  0 disk
 sde           8:64   0    64G  0 disk
 [root@oracle62 ~]# partprobe
 ```
+
 ```log
 [root@oracle62 ~]# lsblk
 NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
@@ -1448,26 +1488,30 @@ Use **ASM Filter Driver (AFD)** to manage ASM disks.
 Upload required installation files to `/u01`
 
 #### Download from URL
+
 [Oracle Database 19c for Linux (Intel x86-64) (64-bit)](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html)<br>
 [Patch Search](https://support.oracle.com/support/?page=sptemplate&sptemplate=cp-patches-updates-view-more)<br>
 [Simple Search](https://updates.oracle.com/Orion/PatchDetails/switch_to_simple)
 
 #### SCP (Send file to remote server)
+
 ```bash
 scp p6880880_190000_Linux-x86-64.zip grid@oracle61://home/grid/19c/
 scp LINUX.X64_193000_grid_home.zip grid@oracle61://home/grid/19c/
 scp p33803476_190000_Linux-x86-64.zip grid@oracle61://home/grid/19c/
 ```
 
+### Unzip files
 
-### Unzip files 
 login as `grid` user
+
 ```bash
 unzip /u01/LINUX.X64_193000_grid_home.zip -d $ORACLE_HOME
 mv $ORACLE_HOME/OPatch/ $ORACLE_HOME/OPatch_BKP
 unzip /u01/p6880880_190000_Linux-x86-64.zip -d $ORACLE_HOME
 unzip p33803476_190000_Linux-x86-64.zip -d /u01
 ```
+
 ```log
 [grid@oracle61 19c]$ ls -l .
 total 5658652
@@ -1489,7 +1533,8 @@ OPatch Version: 12.2.0.1.49
 OPatch succeeded.
 [grid@oracle61 19c]$ unzip p33803476_190000_Linux-x86-64.zip -d /u01
 ```
-### Prerequisites 
+
+### Prerequisites
 
 #### Generate SSH Key (Both Nodes)
 
@@ -1501,12 +1546,14 @@ ssh-keygen -t rsa
 Copy SSH Key
 
 From Node2 → Node1
+
 ```bash
 ssh-copy-id grid@oracle61.p2ok.site
 
 ```
 
 From Node1 → Node2
+
 ```bash
 ssh-copy-id grid@oracle62.p2ok.site
 
@@ -1522,11 +1569,13 @@ ssh grid@oracle61 date
 
 login as `root` user in both nodes <br>
 verify NTP time
+
 ```bash
 systemctl restart chronyd.service
 chronyc sources
 
 ```
+
 ```log
 [root@oracle62 ~]# systemctl restart chronyd.service
 [root@oracle62 ~]# chronyc sources
@@ -1541,6 +1590,7 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 ^? tok2.jp.ntp.li                4   6     3     0    -12ms[  -12ms] +/-  161ms
 [root@oracle62 ~]#
 ```
+
 fix the error INS-06006
 
 ```bash
@@ -1593,13 +1643,16 @@ Updating / installing...
 
 fix the error PRVG-10048
 change /etc/resolv.conf of both nodes to
+
 ```conf
 search p2ok.site
 nameserver      172.16.2.61
 ```
 
 #### Verify Prerequisites (CVU)
+
 login as `grid` user
+
 ```bash
 $ORACLE_HOME/runcluvfy.sh stage -post crsinst -n oracle61,oracle62 -verbose
 $ORACLE_HOME/oui/prov/resources/scripts/sshUserSetup.sh -user grid -hosts "oracle61 oracle62" -noPromptPassphrase -confirm -advanced
@@ -1613,6 +1666,7 @@ Keep the installer ready, then configure ASMFD (CRS voting disk) before proceedi
 
 login as `root` user<br>
 Label CRS Disk (ASMFD)
+
 ```bash
 source /home/grid/.grid_env
 export ORACLE_BASE=/tmp
@@ -1636,12 +1690,14 @@ CRS1                                  /dev/sdc1
 ```
 
 Remove Label (if wrong disk)
+
 ```bash
 asmcmd afd_unlabel /dev/sdc1 --init
 
 ```
 
 chown owner group disk do both nodes
+
 ```bash
 blkid /dev/sdc1
 blkid /dev/sdd1
@@ -1654,7 +1710,9 @@ ls -l /dev/sdd1
 ls -l /dev/sde1
 
 ```
+
 expected output
+
 ```log
 [root@oracle61 ~]# blkid /dev/sdd1
 /dev/sdd1: PARTUUID="fa4ad1ee-01"
@@ -1686,7 +1744,9 @@ cd $ORACLE_HOME
 ./gridSetup.sh -applyPSU /u01/33803476/
 
 ```
+
 Expected Output
+
 ```log
 [grid@oracle61 ~]$ cd $ORACLE_HOME
 [grid@oracle61 grid_home]$ ./gridSetup.sh -applyPSU /u01/33803476/
@@ -1696,6 +1756,7 @@ Successfully applied the patch.
 The log can be found at: /tmp/GridSetupActions2026-03-26_04-35-56PM/installerPatchActions_2026-03-26_04-35-56PM.log
 Launching Oracle Grid Infrastructure Setup Wizard...
 ```
+
 ```log
 [root@oracle61 ~]# firewall-cmd --permanent --add-port=22/tcp
 success
@@ -1733,6 +1794,7 @@ public (active)
         rule family="ipv4" source address="10.10.10.0/24" accept
         rule family="ipv4" source address="172.16.2.0/24" accept
 ```
+
 ```log
 [root@oracle62 ~]# firewall-cmd --permanent --add-port=22/tcp
 success
@@ -1771,6 +1833,7 @@ public (active)
         rule family="ipv4" source address="172.16.2.0/24" accept
 [root@oracle62 ~]#
 ```
+
 ```log
 [root@oracle61 19c]# rpm -ivh oracleasm-support-3.1.1-4.el8.x86_64.rpm
 Verifying...                          ################################# [100%]
@@ -1784,6 +1847,7 @@ Preparing...                          ################################# [100%]
 Updating / installing...
    1:oracleasmlib-3.1.1-1.el8         ################################# [100%]
 ```
+
 ```log
 [grid@oracle61 ~]$ scp 19c/oracleasmlib-3.1.1-1.el8.x86_64.rpm oracle62://tmp/
 oracleasmlib-3.1.1-1.el8.x86_64.rpm              100%   52KB  45.2MB/s   00:00
@@ -1791,6 +1855,7 @@ oracleasmlib-3.1.1-1.el8.x86_64.rpm              100%   52KB  45.2MB/s   00:00
 oracleasm-support-3.1.1-4.el8.x86_64.rpm         100%   87KB  52.2MB/s   00:00
 [grid@oracle61 ~]$
 ```
+
 ```log
 [root@oracle62 ~]# rpm -ivh /tmp/oracleasm-support-3.1.1-4.el8.x86_64.rpm
 Verifying...                          ################################# [100%]
@@ -1807,6 +1872,7 @@ Updating / installing...
 ```
 
 fix NTP time `(run as root user)`
+
 ```bash
 touch /etc/ntp.conf
 chmod 644 /etc/ntp.conf
@@ -1814,6 +1880,7 @@ touch /var/run/ntpd.pid
 chmod 644 /var/run/ntpd.pid
 ln -s /usr/sbin/chronyd /usr/sbin/ntpd
 ```
+
 Now We can Proceed the GUI
 
 ![](picture/Grid_Installation_01.png)
@@ -1856,9 +1923,10 @@ Now We can Proceed the GUI
 
 ![](picture/Grid_Installation_18.png)
 
+### Check Cluster Status
 
-### Check Cluster Status 
 login as `root` user
+
 ```bash
 source /home/grid/.grid_env
 crsctl stat res -t
@@ -1866,7 +1934,9 @@ ps -ef | grep pmon
 su - grid
 asmcmd -v
 ```
+
 expected output
+
 ```log
 [root@oracle61 ~]# crsctl stat res -t
 --------------------------------------------------------------------------------
@@ -1940,7 +2010,7 @@ asmcmd version 19.0.0.0.0
 
 ## Database Installation
 
-### Install DB Software Only 
+### Install DB Software Only
 
 download and import zip file ([LINUX.X64_193000_grid_home.zip](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html)) to node1
 
@@ -1972,6 +2042,7 @@ OPatch succeeded.
 ```
 
 Fix oracl 12c DB INS-06006
+
 ```bash
 $ORACLE_HOME/deinstall/sshUserSetup.sh -user oracle -hosts "oracle61 oracle62" -advanced -exverify -confirm -noPromptPassphrase
 ssh oracle62.p2ok.site
@@ -1979,10 +2050,12 @@ ssh oracle62.p2ok.site
 ```
 
 begin installation
+
 ```bash
 cd $ORACLE_HOME
 ./runInstaller
 ```
+
 expected output
 
 ```log
@@ -2013,12 +2086,14 @@ Launching Oracle Database Setup Wizard...
 
 ![](picture/Database_Installation_11.png)
 
-click close 
+click close
 
 ![](attachments/Pasted%20image%2020220606133731.png)
 
 ### Create Data,FRA
+
 Node 1:
+
 ```bash
 source /home/grid/.grid_env
 export ORACLE_BASE=/tmp
@@ -2030,6 +2105,7 @@ asmcmd afd_label DATA1 /dev/sdd1
 asmcmd afd_lsdsk
 ls -l /dev/oracleafd/disks
 ```
+
 ```log
 [root@oracle61 ~]# source /home/grid/.grid_env
 [root@oracle61 ~]# export ORACLE_BASE=/tmp
@@ -2206,7 +2282,7 @@ ora.scan3.vip
 
 Login as `oracle`:
 
-```bash 
+```bash
 cd $ORACLE_HOME
 dbca
 ```
@@ -2243,12 +2319,13 @@ dbca
 
 ![](picture/dbca_16.png)
 
+## Patch DB
 
-## Patch DB 
 ### Node 1
 
 #### Check
-Run below command using oracle user 
+
+Run below command using oracle user
 
 ```bash
 cat /tmp/patch_db.txt
@@ -2258,6 +2335,7 @@ chmod +x dbversion.sh
 cat dbversion.sh
 ./dbversion.sh
 ```
+
 ```log
 [oracle@oracle61 ~]$ cat /tmp/patch_db.txt
 /home/oracle/38632161/
@@ -2466,7 +2544,8 @@ Time taken to complete the session 111 minutes, 8 seconds
 ### Node 2
 
 #### Check
-Run below command using `oracle` user 
+
+Run below command using `oracle` user
 
 ```bash
 vi /tmp/patch_db.txt
@@ -2477,6 +2556,7 @@ chmod +x dbversion.sh
 cat dbversion.sh
 ./dbversion.sh
 ```
+
 ```log
 [oracle@oracle62 ~]$ vi /tmp/patch_db.txt
 [oracle@oracle62 ~]$ cat /tmp/patch_db.txt
@@ -2770,6 +2850,7 @@ Time taken to complete the session 35 minutes, 51 seconds
 ### Data Patch
 
 login as `oracle` user
+
 ```bash
 $ORACLE_HOME/OPatch/datapatch -verbose
 ```
@@ -2837,7 +2918,8 @@ ALTER SESSION SET CONTAINER=PRODPDB1;
 @?/rdbms/admin/utlrp.sql
 ```
 
-### Check Version 
+### Check Version
+
 ```bash
 cat ./dbversion.sh
 ./dbversion.sh
@@ -2855,7 +2937,9 @@ col status for a15
 select comp_name, version, version_full,status,con_id from cdb_registry order by con_id;
 SQL
 ```
+
 run check
+
 ```log
 [oracle@oracle61 ~]$ ./dbversion.sh
 
@@ -2909,6 +2993,7 @@ Check cluster status
 ```bash
 crsctl check cluster -all
 ```
+
 ```log
 [root@oracle61 ~]# crsctl check cluster -all
 **************************************************************
@@ -2936,85 +3021,120 @@ Stop cluster on all nodes
 ```bash
 crsctl stop cluster -all
 ```
+
 Start cluster on all nodes
+
 ```bash
 crsctl start cluster -all
 ```
+
 Cluster Control (Specific Node) <br>
 Stop cluster services on a specific node:
+
 ```bash
 crsctl stop cluster -n oracle61
 ```
+
 Start cluster services on a specific node:
+
 ```bash
 crsctl start cluster -n oracle62
 ```
+
 CRS (High Availability Services)
 
 Enable CRS auto-start:
+
 ```bash
 crsctl enable crs
 ```
+
 Check CRS status:
+
 ```bash
 crsctl check crs
 ```
+
 Stop CRS on local node:
+
 ```bash
 crsctl stop crs
 ```
+
 Force stop CRS if required:
+
 ```bash
 crsctl stop crs -f
 ```
+
 Help Commands
 
 Display available options:
+
 ```bash
 crsctl -h
 crsctl check -h
 ```
+
 Instance Management<br>
 Stop specific instance:
+
 ```bash
 srvctl stop instance -d PROD -i PROD2
 ```
 
 Start specific instance:
+
 ```bash
 srvctl start instance -d PROD -i PROD2
 ```
+
 Database Status and Configuration<br>
 Check database status:
+
 ```bash
 srvctl status database -d prod
 ```
+
 Display database configuration:
+
 ```bash
 srvctl config database -d prod
 ```
+
 Search configuration options:
+
 ```bash
 srvctl modify database -h | grep -i pfile
 ```
+
 Service Management<br>
 Create service:
+
 ```bash
 srvctl add service -d prod1 -pdb prodpdb1 -service sales -preferred PROD1,PROD2
 ```
+
 Check service status:
+
 ```bash
 srvctl status service -d prod
 ```
+
 Start service:
+
 ```bash
 srvctl start service -d prod -s sales
 ```
+
 Stop service:
+
 ```bash
 srvctl stop service -d prod -s sales
 ```
+
 Remove service:
+
 ```bash
 srvctl remove service -d prod -s sales
 ```
@@ -3052,6 +3172,7 @@ SQL command
 ```sql
 SELECT value FROM v$parameter WHERE name = 'cluster_database';
 ```
+
 ```log
 SQL> SELECT value FROM v$parameter WHERE name = 'cluster_database';
 
@@ -3059,10 +3180,13 @@ VALUE
 --------------------------------------------------------------------------------
 TRUE
 ```
+
 Check Number of Instances
+
 ```sql
 SELECT inst_id, instance_name, host_name FROM gv$instance;
 ```
+
 ```log
 SQL> SELECT inst_id, instance_name, host_name FROM gv$instance;
 
@@ -3076,10 +3200,13 @@ oracle61.p2ok.site
          2 PROD2
 oracle62.p2ok.site
 ```
+
 Check Cluster Database View
+
 ```sql
 SELECT * FROM v$active_instances;
 ```
+
 ```log
 SQL> SELECT * FROM v$active_instances;
 
