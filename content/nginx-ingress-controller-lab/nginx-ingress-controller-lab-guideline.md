@@ -523,11 +523,11 @@ kubectl delete ingress webapp-ingress -n app-lab
 ### 9.2 Create VirtualServerRoute
 
 ```bash
-cat > webapp-vsr.yaml <<'YAML'
+cat > webapp-v1-vsr.yaml <<'YAML'
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServerRoute
 metadata:
-  name: webapp-routes
+  name: webapp-v1-routes
   namespace: app-lab
 spec:
   host: webapp.lab.local
@@ -535,19 +535,37 @@ spec:
   - name: webapp-v1
     service: webapp-v1
     port: 80
-  - name: webapp-v2
-    service: webapp-v2
-    port: 80
   subroutes:
   - path: /v1
     action:
       pass: webapp-v1
+YAML
+
+kubectl apply -f webapp-v1-vsr.yaml
+```
+
+and
+
+```bash
+cat > webapp-v2-vsr.yaml <<'YAML'
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServerRoute
+metadata:
+  name: webapp-v2-routes
+  namespace: app-lab
+spec:
+  host: webapp.lab.local
+  upstreams:
+  - name: webapp-v2
+    service: webapp-v2
+    port: 80
+  subroutes:
   - path: /v2
     action:
       pass: webapp-v2
 YAML
 
-kubectl apply -f webapp-vsr.yaml
+kubectl apply -f webapp-v2-vsr.yaml
 ```
 
 ### 9.3 Create VirtualServer
@@ -566,9 +584,9 @@ spec:
     secret: webapp-tls
   routes:
   - path: /v1
-    route: app-lab/webapp-routes
+    route: app-lab/webapp-v1-routes
   - path: /v2
-    route: app-lab/webapp-routes
+    route: app-lab/webapp-v2-routes
 YAML
 
 kubectl apply -f webapp-vs.yaml
@@ -579,7 +597,8 @@ Verify:
 ```bash
 kubectl get vs,vsr -n app-lab -o wide
 kubectl describe vs webapp -n app-lab
-kubectl describe vsr webapp-routes -n app-lab
+kubectl describe vsr webapp-v1-routes -n app-lab
+kubectl describe vsr webapp-v2-routes -n app-lab
 ```
 
 Expected event:
