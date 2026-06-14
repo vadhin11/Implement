@@ -112,6 +112,56 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 ```
 
+### 3.1 Optional Fix: Bash and kubectl Tab Completion
+
+Use this task if pressing the **Tab** key while typing `kubectl` commands shows an error such as:
+
+```text
+bash: _get_comp_words_by_ref: command not found
+```
+
+This happens when the `bash-completion` package or Bash completion script is not loaded before `kubectl completion bash`.
+
+Install Bash completion:
+
+```bash
+apt update
+apt install -y bash-completion
+```
+
+Edit `.bashrc`:
+
+```bash
+vi ~/.bashrc
+```
+
+Add this near the bottom of the file, before or replacing the existing `source <(kubectl completion bash)` lines:
+
+```bash
+if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+
+source <(kubectl completion bash)
+alias k=kubectl
+complete -o default -F __start_kubectl k
+```
+
+Reload the shell profile:
+
+```bash
+source ~/.bashrc
+```
+
+Test completion:
+
+```bash
+kubectl get po<Tab>
+kubectl create secret generic nplus-license --from-file=license.jwt=<Tab>
+```
+
+If the shell still shows the same error, open a new SSH session and test again.
+
 ---
 
 ## 4. NGINX Plus License and Registry Preparation
