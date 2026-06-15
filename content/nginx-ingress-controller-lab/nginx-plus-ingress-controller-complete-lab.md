@@ -978,16 +978,31 @@ Expected: some requests may return `429` when the rate limit is exceeded.
 Create a password file:
 
 ```bash
-htpasswd -bc auth admin P@ssw0rd123
+htpasswd -bc htpasswd admin 'P@ssw0rd123'
 ```
 
 Create a secret:
 
 ```bash
 kubectl create secret generic basic-auth \
-  --from-file=auth \
+  --from-file=htpasswd=htpasswd \
+  --type=nginx.org/htpasswd \
   -n $APP_NAMESPACE \
   --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Verify the secret:
+
+```bash
+kubectl get secret basic-auth -n $APP_NAMESPACE -o yaml
+```
+
+Expected:
+
+```yaml
+type: nginx.org/htpasswd
+data:
+  htpasswd: ...
 ```
 
 Create a Basic Auth policy:
