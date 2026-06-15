@@ -823,12 +823,18 @@ YAML
 kubectl apply -f webapp-vs-split.yaml
 ```
 
-Test multiple requests:
+Test multiple requests from Linux Bash:
 
 ```bash
 for i in {1..20}; do
   curl -k -s --resolve $LAB_HOST:$HTTPS_PORT:$NIC_IP https://$LAB_HOST:$HTTPS_PORT/
 done
+```
+
+Test multiple requests from Windows CMD:
+
+```cmd
+for /L %i in (1,1,20) do @curl.exe -k -s --resolve webapp.lab.local:30443:172.16.2.14 https://webapp.lab.local:30443/
 ```
 
 Expected: most responses should be `v1`, and some should be `v2`.
@@ -949,12 +955,18 @@ YAML
 kubectl apply -f webapp-vs-rate-limit.yaml
 ```
 
-Test quickly:
+Test quickly from Linux Bash:
 
 ```bash
 for i in {1..20}; do
   curl -k -s -o /dev/null -w "%{http_code}\n" --resolve $LAB_HOST:$HTTPS_PORT:$NIC_IP https://$LAB_HOST:$HTTPS_PORT/
 done
+```
+
+Test quickly from Windows CMD:
+
+```cmd
+for /L %i in (1,1,20) do @curl.exe -k -s -o nul -w "%{http_code}\n" --resolve webapp.lab.local:30443:172.16.2.14 https://webapp.lab.local:30443/
 ```
 
 Expected: some requests may return `429` when the rate limit is exceeded.
